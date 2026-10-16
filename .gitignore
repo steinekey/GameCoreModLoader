@@ -2,3 +2,11 @@ bin/
 obj/
 *.user
 .vs/
+
+# Build log written by the build command in deploy.ps1
+_tmp_build.txt
+
+# Generated copies of the names file (tools/gen_gamecore_names.py writes into the game folder).
+# The hand-made tools/gamecore_names.txt is tracked, so it is kept.
+gamecore_names.txt
+!tools/gamecore_names.txt
