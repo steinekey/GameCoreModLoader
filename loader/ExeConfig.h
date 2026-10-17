@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 #pragma once
+#include <cstdint>
 
 // The exe's own connection to the configuration database: the one it read the GameCores row with
 // just before it loaded the loader.
@@ -14,4 +15,8 @@ namespace ExeConfig {
 	// exe is not the build this was decoded from, or it has no configuration database right now.
 	// The connection belongs to the exe: use it, never release it.
 	void* Connection();
+	// The global that holds the exe's configuration manager, in the exe image mapped at `exe`
+	// (the running exe, or a copy the loader test maps), or nullptr when its code does not check
+	// out. Exposed for LoaderDbTest.
+	const void* const* FindGlobal(uintptr_t exe);
 }

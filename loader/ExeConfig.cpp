@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <cstdint>
 #include <cstring>
+#include <initializer_list>
 
 // What the exe's code does (CivilizationVI_DX12.exe, Steam build 15038592, read 2026-10-17):
 //   exe+0x249827  mov rcx, [rip+X]       the configuration manager's global (exe+0x12fa2c8)
@@ -47,14 +48,18 @@ namespace ExeConfig {
 		};
 		constexpr uintptr_t kConnectionOffset = 0x08;
 
-		// The displacement fields (0x00 in the patterns) are compared separately.
+		// True when `code` has the pattern's bytes, ignoring the 4-byte displacement fields that
+		// start at the offsets in `skips` (0x00 in the patterns; their targets are checked apart).
 		bool Matches(const uint8_t* code, const uint8_t* pattern, size_t size,
-			size_t skipFrom, size_t skipCount) {
+			std::initializer_list<size_t> skips) {
 			for (size_t i = 0; i < size; i++) {
-				if (i >= skipFrom && i < skipFrom + skipCount) {
-					continue;
+				bool skipped = false;
+				for (size_t skip : skips) {
+					if (i >= skip && i < skip + sizeof(int32_t)) {
+						skipped = true;
+					}
 				}
-				if (code[i] != pattern[i]) {
+				if (!skipped && code[i] != pattern[i]) {
 					return false;
 				}
 			}
@@ -74,26 +79,6 @@ namespace ExeConfig {
 			return nt->OptionalHeader.SizeOfImage;
 		}
 
-		// The global that holds the configuration manager, once the code around it checks out.
-		const void* const* FindGlobal(uintptr_t exe) {
-			if (ImageSize(exe) < kDatabaseConnectionRva + sizeof(kDatabaseConnection)) {
-				return nullptr;
-			}
-			const uint8_t* read = (const uint8_t*)(exe + kGameCoresReadRva);
-			const uint8_t* connectionOf = (const uint8_t*)(exe + kConnectionOfRva);
-			const uint8_t* databaseConnection = (const uint8_t*)(exe + kDatabaseConnectionRva);
-			if (!Matches(read, kGameCoresRead, sizeof(kGameCoresRead), kGlobalDisplacementOffset, 4)
-				|| !Matches(read, kGameCoresRead, sizeof(kGameCoresRead), kCallOffset + 1, 4)
-				|| Rel32Target(read + kCallOffset + 1) != (uintptr_t)connectionOf
-				|| !Matches(connectionOf, kConnectionOf, sizeof(kConnectionOf), kJumpOffset + 1, 4)
-				|| Rel32Target(connectionOf + kJumpOffset + 1) != (uintptr_t)databaseConnection
-				|| memcmp(databaseConnection, kDatabaseConnection, sizeof(kDatabaseConnection)) != 0) {
-				return nullptr;
-			}
-			int32_t displacement;
-			memcpy(&displacement, read + kGlobalDisplacementOffset, sizeof(displacement));
-			return (const void* const*)(read + kGlobalInstructionEnd + displacement);
-		}
 
 		// The pointer chain, read under SEH: a half-built manager must not take the game down.
 		void* Follow(const void* const* global) {
@@ -112,6 +97,26 @@ namespace ExeConfig {
 				return nullptr;
 			}
 		}
+	}
+
+	const void* const* FindGlobal(uintptr_t exe) {
+		if (ImageSize(exe) < kDatabaseConnectionRva + sizeof(kDatabaseConnection)) {
+			return nullptr;
+		}
+		const uint8_t* read = (const uint8_t*)(exe + kGameCoresReadRva);
+		const uint8_t* connectionOf = (const uint8_t*)(exe + kConnectionOfRva);
+		const uint8_t* databaseConnection = (const uint8_t*)(exe + kDatabaseConnectionRva);
+		if (!Matches(read, kGameCoresRead, sizeof(kGameCoresRead),
+				{ kGlobalDisplacementOffset, kCallOffset + 1 })
+			|| Rel32Target(read + kCallOffset + 1) != (uintptr_t)connectionOf
+			|| !Matches(connectionOf, kConnectionOf, sizeof(kConnectionOf), { kJumpOffset + 1 })
+			|| Rel32Target(connectionOf + kJumpOffset + 1) != (uintptr_t)databaseConnection
+			|| memcmp(databaseConnection, kDatabaseConnection, sizeof(kDatabaseConnection)) != 0) {
+			return nullptr;
+		}
+		int32_t displacement;
+		memcpy(&displacement, read + kGlobalDisplacementOffset, sizeof(displacement));
+		return (const void* const*)(read + kGlobalInstructionEnd + displacement);
 	}
 
 	void* Connection() {

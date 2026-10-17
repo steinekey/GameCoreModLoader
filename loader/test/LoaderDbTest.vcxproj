@@ -43,6 +43,7 @@
   <ItemGroup>
     <ClCompile Include="LoaderDbTest.cpp" />
     <ClCompile Include="..\ConfigDb.cpp" />
+    <ClCompile Include="..\ExeConfig.cpp" />
     <ClCompile Include="..\ModFolders.cpp" />
     <ClCompile Include="..\Paths.cpp" />
     <ClCompile Include="..\LoaderLog.cpp" />

@@ -12,6 +12,7 @@
 //   GCML_GAME_ROOT must point at the game folder (ModFolders reads DLC and the Workshop from it).
 //   The repo's bin\ must hold GameCore_XP2_GCML_FinalRelease.dll and test\GcmlFake.dll.
 #include "ConfigDb.h"
+#include "ExeConfig.h"
 #include "ModFolders.h"
 #include "Paths.h"
 #include <Windows.h>
@@ -307,6 +308,20 @@ int main(int argc, char** argv) {
 	ConfigDb::Close();
 	Check(Execute(busy, "ROLLBACK;"), "Close leaves a borrowed connection open");
 	Release(busy);
+
+	printf("-- the exe's configuration connection\n");
+	Check(ExeConfig::FindGlobal((uintptr_t)GetModuleHandleW(nullptr)) == nullptr,
+		"not found in another program (this test)");
+	std::wstring gameExe = Paths::GameRoot() + L"Base\\Binaries\\Win64Steam\\CivilizationVI_DX12.exe";
+	HMODULE image = LoadLibraryExW(gameExe.c_str(), nullptr, LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+	Check(image != nullptr, "the game's exe maps as an image");
+	if (image) {
+		// The low bits of an image-resource handle are flags.
+		uintptr_t exeBase = (uintptr_t)image & ~(uintptr_t)3;
+		Check(ExeConfig::FindGlobal(exeBase) == (const void* const*)(exeBase + 0x12fa2c8),
+			"found in the game's exe: the global at exe+0x12fa2c8");
+		FreeLibrary(image);
+	}
 
 	printf("-- mod folders\n");
 	std::wstring dlc = ModFolders::Find(kExpansion2Id);
