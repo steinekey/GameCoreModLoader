@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 #include "ConfigDb.h"
+#include "ExeConfig.h"
 #include "GameCorePlugin.h"
 #include "LoaderLog.h"
 #include "LoaderVersion.h"
@@ -263,9 +264,19 @@ namespace {
 		ModFolders::AddRoot(ParentDir(ownMod));
 		ModFolders::AllowRescan();
 
-		bool haveDatabase = ConfigDb::Open();
+		// The exe's own connection first: it reads the rows of the transaction the exe has open
+		// right now, which a connection of our own cannot (see ExeConfig.h).
+		bool haveDatabase = ConfigDb::OpenBorrowed(ExeConfig::Connection());
 		if (haveDatabase) {
-			LoaderLog::Write("configuration database %d", ConfigDb::OpenIndex());
+			LoaderLog::Write("configuration database: the exe's connection");
+		}
+		else {
+			haveDatabase = ConfigDb::Open();
+			if (haveDatabase) {
+				LoaderLog::Write("configuration database %d", ConfigDb::OpenIndex());
+			}
+		}
+		if (haveDatabase) {
 			gPlugins = ReadPlugins();
 			LoaderLog::Write("%zu plugins registered", gPlugins.size());
 			for (Plugin& plugin : gPlugins) {

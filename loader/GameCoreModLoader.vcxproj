@@ -50,12 +50,14 @@
   <ItemGroup>
     <ClCompile Include="GameCoreModLoader.cpp" />
     <ClCompile Include="ConfigDb.cpp" />
+    <ClCompile Include="ExeConfig.cpp" />
     <ClCompile Include="ModFolders.cpp" />
     <ClCompile Include="Paths.cpp" />
     <ClCompile Include="LoaderLog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConfigDb.h" />
+    <ClInclude Include="ExeConfig.h" />
     <ClInclude Include="ModFolders.h" />
     <ClInclude Include="Paths.h" />
     <ClInclude Include="LoaderLog.h" />

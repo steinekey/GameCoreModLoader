@@ -296,6 +296,18 @@ int main(int argc, char** argv) {
 	ConfigDb::Close();
 	Release(second);
 
+	printf("-- the game's state when it loads GameCore: a schema change not yet committed\n");
+	void* busy = Build(create, 11, stockSql, { alfSql, modA });
+	Check(Execute(busy, "BEGIN; CREATE TABLE GcmlTestUncommitted(Unused TEXT);"),
+		"the writer starts a transaction that changes the schema");
+	Check(!ConfigDb::Open(), "a connection of our own cannot read it (schema locked)");
+	Check(ConfigDb::OpenBorrowed(busy), "the writer's own connection can");
+	plugins = ConfigDb::Select("SELECT File FROM GcmlPlugins", 1);
+	Check(plugins.size() == 1 && plugins[0][0] == "Binaries/Win64/A.dll", "and reads the plugins");
+	ConfigDb::Close();
+	Check(Execute(busy, "ROLLBACK;"), "Close leaves a borrowed connection open");
+	Release(busy);
+
 	printf("-- mod folders\n");
 	std::wstring dlc = ModFolders::Find(kExpansion2Id);
 	printf("     Expansion2 -> %s\n", Paths::Narrow(dlc).c_str());

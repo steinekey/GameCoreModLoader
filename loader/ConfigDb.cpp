@@ -73,6 +73,8 @@ namespace ConfigDb {
 
 		CreateConnectionFn gCreateConnection = nullptr;
 		void* gConnection = nullptr;
+		// gConnection belongs to the exe: never release it.
+		bool gBorrowed = false;
 		int gIndex = -1;
 
 		// ===== Helpers =====
@@ -170,6 +172,16 @@ namespace ConfigDb {
 		return true;
 	}
 
+	bool OpenBorrowed(void* connection) {
+		Close();
+		if (!connection || !SelectsLoader(connection)) {
+			return false;
+		}
+		gConnection = connection;
+		gBorrowed = true;
+		return true;
+	}
+
 	int OpenIndex() {
 		return gIndex;
 	}
@@ -182,10 +194,11 @@ namespace ConfigDb {
 	}
 
 	void Close() {
-		if (gConnection) {
+		if (gConnection && !gBorrowed) {
 			Release(gConnection);
 		}
 		gConnection = nullptr;
+		gBorrowed = false;
 		gIndex = -1;
 	}
 }

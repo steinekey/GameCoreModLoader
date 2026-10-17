@@ -71,11 +71,21 @@ SQLite in the same process sees it, so the loader opens it through the game's ow
 
 - export `Database::CreateConnection(const char* name, int sqliteFlags, IDatabaseLogger*)`, called
   with flags `0x41` (read only, URI), the same as the exe's own read-only configuration connections;
-- connection vtable slot 3 `CreateQuery(sql, length)` (length -1: up to the terminating zero), query slot 4 `Step()`, slot 30 `ColumnText(column)`,
-  slot 1 `Release()` on both. These are the slots the exe itself reads `GameCores` with
+- connection vtable slot 3 `CreateQuery(sql, length)` (length -1: up to the terminating zero),
+  query slot 4 `Step()`, slot 30 `ColumnText(column)`, slot 1 `Release()` on both. These are the slots the exe itself reads `GameCores` with
   (`CivilizationVI_DX12.exe+0x249840`), so they are the ABI between the game's own DLLs.
 
-It tries every `<n>` and keeps the database whose `GameCores` row selects the loader.
+**But when the game loads GameCore, it is in the middle of a write transaction on that database
+that has changed its tables.** SQLite's shared cache then refuses every other connection with
+"database schema is locked", whatever it reads. So the loader first borrows the exe's own
+configuration connection, the one it read `GameCores` with a moment earlier, which reads its own
+uncommitted rows: `*(*(*(exe+0x12fa2c8) + 0x54f0) + 8)`, found through the code at
+`exe+0x249827`, `exe+0x64150` and `exe+0x861660` and only after every byte of it checks out
+(`loader/ExeConfig.cpp`). The loader never releases that connection.
+
+When the exe is another build, the loader falls back to a connection of its own: it tries every
+`<n>` and keeps the database whose `GameCores` row selects the loader. That works only while no
+such transaction is open. `bin\test\LoaderDbTest.exe` checks both cases.
 
 ## Writing a plugin
 
