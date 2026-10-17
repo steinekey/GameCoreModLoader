@@ -36,12 +36,15 @@ namespace ConfigDb {
 
 		// Virtual slots, counted from 0. Connections and queries both start with a vtable pointer.
 		constexpr int kReleaseSlot = 1;      // both: void Release()
-		constexpr int kCreateQuerySlot = 3;  // connection: IDatabaseQuery* CreateQuery(const char*)
+		// connection: IDatabaseQuery* CreateQuery(const char* sql, int length). The length is
+		// SQLite's nByte: -1 reads up to the terminating zero, which is what the exe passes.
+		constexpr int kCreateQuerySlot = 3;
+		constexpr int kWholeString = -1;
 		constexpr int kStepSlot = 4;         // query: bool Step(), true while a row is ready
 		constexpr int kColumnTextSlot = 30;  // query: const char* ColumnText(int column)
 
 		typedef void (__cdecl* ReleaseFn)(void* self);
-		typedef void* (__cdecl* CreateQueryFn)(void* self, const char* sql);
+		typedef void* (__cdecl* CreateQueryFn)(void* self, const char* sql, int length);
 		typedef bool (__cdecl* StepFn)(void* self);
 		typedef const char* (__cdecl* ColumnTextFn)(void* self, int column);
 
@@ -76,7 +79,8 @@ namespace ConfigDb {
 
 		std::vector<Row> SelectOn(void* connection, const char* sql, int columns) {
 			std::vector<Row> rows;
-			void* query = Slot<CreateQueryFn>(connection, kCreateQuerySlot)(connection, sql);
+			void* query = Slot<CreateQueryFn>(connection, kCreateQuerySlot)(connection, sql,
+				kWholeString);
 			if (!query) {
 				return rows;
 			}

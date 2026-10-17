@@ -71,7 +71,7 @@ SQLite in the same process sees it, so the loader opens it through the game's ow
 
 - export `Database::CreateConnection(const char* name, int sqliteFlags, IDatabaseLogger*)`, called
   with flags `0x41` (read only, URI), the same as the exe's own read-only configuration connections;
-- connection vtable slot 3 `CreateQuery(sql)`, query slot 4 `Step()`, slot 30 `ColumnText(column)`,
+- connection vtable slot 3 `CreateQuery(sql, length)` (length -1: up to the terminating zero), query slot 4 `Step()`, slot 30 `ColumnText(column)`,
   slot 1 `Release()` on both. These are the slots the exe itself reads `GameCores` with
   (`CivilizationVI_DX12.exe+0x249840`), so they are the ABI between the game's own DLLs.
 
