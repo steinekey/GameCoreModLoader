@@ -173,9 +173,9 @@ Build (Visual Studio 2022+, x64, Release):
 `bin\GameCore_XP2_GCML_FinalRelease.dll`. Its export table (`loader\GameCoreForwards.inc`) is
 generated: `python tools/gen_gamecore_forwards.py <dumpbin.exe> > loader/GameCoreForwards.inc`.
 
-Loader test: build `loader	est\GcmlFake.vcxproj` and `loader	est\LoaderDbTest.vcxproj`, copy the
+Loader test: build `loader\test\GcmlFake.vcxproj` and `loader\test\LoaderDbTest.vcxproj`, copy the
 game's `DatabaseDLL_FinalRelease_Orig.dll` (or `DatabaseDLL_FinalRelease.dll` without the Assets
 Limit Fix) somewhere as `DatabaseDLL_FinalRelease.dll`, and run
-`bin	est\LoaderDbTest.exe <that dll> <repo folder>` with `GCML_GAME_ROOT` set to the game folder.
+`bin\test\LoaderDbTest.exe <that dll> <repo folder>` with `GCML_GAME_ROOT` set to the game folder.
 
 Licensed AGPL-3.0-only.
