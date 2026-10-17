@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 #pragma once
 #include <Windows.h>
 #include <stdint.h>

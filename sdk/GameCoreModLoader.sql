@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: AGPL-3.0-only
+-- SPDX-License-Identifier: MIT
 -- GameCore Mod Loader (GCML), protocol version 1. See sdk/README.md.
 --
 -- Every native mod runs this file, unchanged except for the one INSERT marked EDIT, as a

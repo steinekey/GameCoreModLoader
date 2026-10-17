@@ -122,6 +122,7 @@ Rules:
 | `GameCorePlugin.h` | include it in your plugin |
 | `GameCoreModLoader.sql` | ship it as a FrontEndActions `UpdateDatabase` (LoadOrder 1000000), with the EDIT line filled in |
 | `loader-version.txt` | the loader build: the last value of the EDIT line |
+| `LICENSE.txt` | the MIT license: ship it next to the loader DLL (as `GCML-LICENSE.txt`, say) |
 
 Copy the folder into your mod's repository (as `gcml/`, say) and commit it. To move to a newer
 loader, replace the folder with the new release's and rebuild your package. Nothing else changes:
@@ -178,4 +179,4 @@ game's `DatabaseDLL_FinalRelease_Orig.dll` (or `DatabaseDLL_FinalRelease.dll` wi
 Limit Fix) somewhere as `DatabaseDLL_FinalRelease.dll`, and run
 `bin\test\LoaderDbTest.exe <that dll> <repo folder>` with `GCML_GAME_ROOT` set to the game folder.
 
-Licensed AGPL-3.0-only.
+Licensed MIT; see LICENSE.txt.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 #include "Paths.h"
 #include <Windows.h>
 #include <ShlObj.h>

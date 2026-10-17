@@ -20,5 +20,6 @@ New-Item -ItemType Directory -Force $release | Out-Null
 Copy-Item $loader $release
 Copy-Item (Join-Path $root "sdk\GameCorePlugin.h") $release
 Copy-Item (Join-Path $root "sdk\GameCoreModLoader.sql") $release
+Copy-Item (Join-Path $root "LICENSE.txt") $release
 [System.IO.File]::WriteAllText((Join-Path $release "loader-version.txt"), "$loaderVersion`n")
 Write-Host "released loader $loaderVersion to $release"

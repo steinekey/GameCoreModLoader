@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 // A stand-in for every DLL the loader starts, for LoaderDbTest: a plugin (GcmlAttach, GcmlDetach),
 // an old-style fake GameCore and the real GameCore (DllCreateGameContext, DllDestroyGameContext,
 // and one ordinary export the loader forwards). The real GameCore refuses to initialise outside

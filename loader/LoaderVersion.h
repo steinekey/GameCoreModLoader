@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 #pragma once
 
 // The build of the GameCore Mod Loader. Mods register it as LoaderVersion in GcmlPlugins (see

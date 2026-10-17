@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 #pragma once
 
 // GameCoreModLoader.log, in the Logs folder of the game's user folder (next to the game's own

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 // Checks the loader against the installed game, without running the game:
 //   1. loads the game's DatabaseDLL, builds a configuration database the way the front end does
 //      (GameCores + the mods' FrontEndActions SQL), and runs ConfigDb and ModFolders on it;

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 #include "LoaderLog.h"
 #include "Paths.h"
 #include <Windows.h>
