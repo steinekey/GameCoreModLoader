@@ -102,6 +102,21 @@ Rules:
 - To check the loader against a new game version, run `bin\test\LoaderDbTest.exe` (built from
   `loader/test/`): it drives the game's DatabaseDLL and the loader without starting the game.
 
+## Using a release in your mod
+
+`powershell -File release.ps1` (after building, see below) assembles `bin\release\gcml\`:
+
+| File | What you do with it |
+|---|---|
+| `GameCore_XP2_GCML_FinalRelease.dll` | ship it as `Binaries/Win64/GameCore_XP2_GCML_FinalRelease.dll` |
+| `GameCorePlugin.h` | include it in your plugin |
+| `GameCoreModLoader.sql` | ship it as a FrontEndActions `UpdateDatabase` (LoadOrder 1000000), with the EDIT line filled in |
+| `loader-version.txt` | the loader build: the last value of the EDIT line |
+
+Copy the folder into your mod's repository (as `gcml/`, say) and commit it. To move to a newer
+loader, replace the folder with the new release's and rebuild your package. Nothing else changes:
+the SQL tables and `GcmlAttach` stay compatible.
+
 ## Moving an existing fake-GameCore mod to GCML
 
 - Assets Limit Fix style (all work in `DllMain`, every export forwarded): move the `DllMain` work
@@ -132,3 +147,25 @@ LoadOrder). Two old-style mods still exclude each other, as they do today.
   loader then takes the highest `<n>` that selects it, and logs when there is more than one.
 - Mods are found in the DLC folder, the Workshop folder of the game's Steam library, the user's Mods
   folder (three levels deep) and the folder next to the loader's own mod.
+
+## This repository
+
+```
+loader/        the loader DLL (GameCore_XP2_GCML_FinalRelease.dll); loader/test/ checks it against
+               the installed game
+sdk/           what plugins use: GameCorePlugin.h and GameCoreModLoader.sql
+tools/         gen_gamecore_forwards.py, which writes the loader's export table
+release.ps1    assembles bin\release\gcml\ for mods to vendor
+```
+
+Build (Visual Studio 2022+, x64, Release):
+`msbuild loader\GameCoreModLoader.vcxproj -p:Configuration=Release -p:Platform=x64` writes
+`bin\GameCore_XP2_GCML_FinalRelease.dll`. Its export table (`loader\GameCoreForwards.inc`) is
+generated: `python tools/gen_gamecore_forwards.py <dumpbin.exe> > loader/GameCoreForwards.inc`.
+
+Loader test: build `loader	est\GcmlFake.vcxproj` and `loader	est\LoaderDbTest.vcxproj`, copy the
+game's `DatabaseDLL_FinalRelease_Orig.dll` (or `DatabaseDLL_FinalRelease.dll` without the Assets
+Limit Fix) somewhere as `DatabaseDLL_FinalRelease.dll`, and run
+`bin	est\LoaderDbTest.exe <that dll> <repo folder>` with `GCML_GAME_ROOT` set to the game folder.
+
+Licensed AGPL-3.0-only.
